@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { InputTransformComponent } from './components/input-transform/input-transform.component';
 import { CommonModule } from '@angular/common';
+import { of } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 export interface User{
   name: string;
   age: string;
@@ -37,7 +40,8 @@ export interface User{
     </div> -->
   `,
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
+  destroyedRef = inject(DestroyRef);
   title = 'angular-17-18-features';
   renderBlock = false;
   userList: Array<User> = [
@@ -60,4 +64,17 @@ export class AppComponent {
       profession: 'CEO',
     },
   ];
+
+  userData$ = of(this.userList);
+
+  ngOnInit(): void {
+    this.userData$
+    .pipe(takeUntilDestroyed(this.destroyedRef))
+    .subscribe({
+      next:(res) => {
+        console.log(res)
+      }
+    })
+  }
+
 }
